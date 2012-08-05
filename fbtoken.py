@@ -1,11 +1,18 @@
 import json
 
+import requests
+
 
 class TokenFetcher(object):
     def __call__(self, user_id):
         """Fetch user access token from fbtoken service"""
-        print "call dawg"
-        pass
+        r = requests.get("http://www.elliottsoft.com/fbtoken/token?user_id=%s" % user_id)
+        if r.status_code != 200:
+            msg = "Token fetch failed.  (code=%d)" % (r.status_code)
+            raise Exception(msg)
+
+        json = r.text
+        return self._parse(user_id, json)
 
     def _parse(self, user_id, j):
         d = json.loads(j)

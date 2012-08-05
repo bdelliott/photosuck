@@ -10,10 +10,20 @@ class Client(object):
         items = []
 
         while url:
-            d = self._get(url)
+            j = self._get(url)
+            d = json.loads(j)
+            print url
+            #print d
+
             _items = d['data']
+
             if _items:
-                url = d['paging']['next']
+                # there is not always a 'next' page link:
+                try:
+                    url = d['paging']['next']
+                except KeyError:
+                    url = None
+
                 items.extend(_items)
             else:
                 url = None
@@ -23,11 +33,14 @@ class Client(object):
     def _get(self, url):
         r = requests.get(url)
         if r.status_code != 200:
-            raise Exception(r)
+            msg = "GET on %s failed with code %d. (text='%s')" % (url,
+                    r.status_code, r.text[:100])
+            raise Exception(msg)
         return r.text
 
     def _parse(self, j):
         return json.loads(j)
+
 
 class StubClient(Client):
 

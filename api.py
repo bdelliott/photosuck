@@ -6,18 +6,20 @@ BASE_URL = "https://graph.facebook.com"
 
 class GraphAPI(object):
 
-    def __init__(self, user_id, token_fetcher=None, client=None):
+    def __init__(self, user_id, token_fetcher=None, net_client=None):
         self.user_id = user_id
 
         if not token_fetcher:
             token_fetcher = fbtoken.TokenFetcher()
 
         self.token = token_fetcher(user_id)
+        if not self.token:
+            raise Exception("Failed to acquire a token for user %s" % user_id)
 
-        if not client:
-            client = client.Client()
+        if not net_client:
+            net_client = client.Client()
 
-        self.client = client
+        self.client = net_client
 
     def list_album_photos(self, album_id):
         """list photos in album"""
@@ -36,6 +38,12 @@ class GraphAPI(object):
         albums = self.client.get(url)
 
         return albums
+
+    def list_friends(self):
+
+        url = self._url(obj=self.user_id, connection="friends")
+        friends = self.client.get(url)
+        return friends
 
     def _url(self, obj=None, connection=None):
         if not obj:
